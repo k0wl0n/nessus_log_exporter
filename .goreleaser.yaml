@@ -38,13 +38,7 @@ archives:
     files:
       - README.md
       - LICENSE
-      - DEPLOYMENT.md
-      - NESSUS_SETUP.md
       - nessus-exporter.service
-      - prometheus.yml
-      - nessus_alert_rules.yml
-      - grafana-provisioning/**/*
-      - grafana-dashboards/**/*
 
 checksum:
   name_template: 'checksums.txt'
