@@ -430,21 +430,88 @@ Place sample log files in the project directory and run the exporter pointing to
 
 ### No metrics appearing
 
-1. Check exporter logs: `docker logs nessus_log_exporter`
-2. Verify log paths are correct and readable
-3. Ensure Nessus is generating log activity
+```bash
+# 1. Check exporter logs
+sudo journalctl -u nessus-exporter -n 50
+
+# 2. Check service status
+sudo systemctl status nessus-exporter
+
+# 3. Verify log paths exist and are readable
+ls -lah /opt/nessus/var/nessus/logs/
+
+# 4. Test manually
+sudo /usr/local/bin/nessus_log_exporter \
+  --nessus.messages-log=/opt/nessus/var/nessus/logs/nessusd.messages
+
+# 5. Ensure Nessus is running and generating logs
+sudo systemctl status nessusd
+tail -f /opt/nessus/var/nessus/logs/nessusd.messages
+```
 
 ### Plugin metrics at zero
 
 Enable "Log scan details" in Nessus scan profile → Advanced settings.
 
+```bash
+# Verify plugin launches are being logged
+grep -i "launching" /opt/nessus/var/nessus/logs/nessusd.messages
+```
+
 ### NASL dump metrics sparse
 
-Set `nasl_log_type=trace` via `nessuscli fix --set nasl_log_type=trace`.
+Set `nasl_log_type=trace` to get detailed NASL execution logs:
+
+```bash
+sudo /opt/nessus/sbin/nessuscli fix --set nasl_log_type=trace
+sudo systemctl restart nessusd
+```
+
+**Warning**: `trace` generates very large log files. Monitor disk usage.
 
 ### Permission denied errors
 
-Ensure the exporter has read access to Nessus log files. On Linux, you may need to run the container with appropriate user/group permissions.
+```bash
+# Check file permissions
+ls -lah /opt/nessus/var/nessus/logs/
+
+# The exporter runs as root (via systemd), but verify logs are readable
+sudo cat /opt/nessus/var/nessus/logs/nessusd.messages | head
+
+# If needed, adjust log permissions
+sudo chmod 644 /opt/nessus/var/nessus/logs/*.log
+sudo chmod 644 /opt/nessus/var/nessus/logs/*.messages
+```
+
+### Service won't start
+
+```bash
+# Check for configuration errors
+sudo journalctl -u nessus-exporter -n 100
+
+# Verify binary exists and is executable
+ls -lah /usr/local/bin/nessus_log_exporter
+
+# Test configuration
+sudo /usr/local/bin/nessus_log_exporter --help
+
+# Restart service
+sudo systemctl restart nessus-exporter
+```
+
+### Metrics endpoint not responding
+
+```bash
+# Check if port is listening
+sudo ss -tulpn | grep 19835
+
+# Test locally
+curl http://localhost:19835/metrics
+
+# Check firewall (if accessing remotely)
+sudo ufw status
+sudo firewall-cmd --list-all
+```
 
 ## License
 
