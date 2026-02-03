@@ -266,6 +266,58 @@ environment:
 - `nessus_host_net_send_bytes_total{interface}` - Network bytes sent
 - `nessus_host_uptime_seconds` - Host uptime
 
+### Example Metrics Output
+
+```prometheus
+# HELP nessus_agent_linked 1 if agent is currently linked to a manager, 0 otherwise.
+# TYPE nessus_agent_linked gauge
+nessus_agent_linked 1
+
+# HELP nessus_backend_log_lines_total Total lines parsed from backend.log.
+# TYPE nessus_backend_log_lines_total counter
+nessus_backend_log_lines_total 1662
+
+# HELP nessus_cli_commands_total Total nessuscli commands executed.
+# TYPE nessus_cli_commands_total counter
+nessus_cli_commands_total{command="fix"} 2
+nessus_cli_commands_total{command="managed"} 1
+
+# HELP nessus_errors_total Total error-level log messages.
+# TYPE nessus_errors_total counter
+nessus_errors_total{log_source="backend"} 2
+nessus_errors_total{log_source="dump"} 1
+
+# HELP nessus_host_cpu_percent Host CPU utilisation percent.
+# TYPE nessus_host_cpu_percent gauge
+nessus_host_cpu_percent 32.84
+
+# HELP nessus_host_memory_percent Host memory utilisation percent.
+# TYPE nessus_host_memory_percent gauge
+nessus_host_memory_percent 5.61
+
+# HELP nessus_host_disk_used_bytes Disk used bytes per mount.
+# TYPE nessus_host_disk_used_bytes gauge
+nessus_host_disk_used_bytes{mount="/"} 1.38e+10
+nessus_host_disk_used_bytes{mount="/boot/efi"} 6.34e+06
+
+# HELP nessus_host_net_recv_bytes_total Network bytes received per interface.
+# TYPE nessus_host_net_recv_bytes_total counter
+nessus_host_net_recv_bytes_total{interface="ens4"} 6.92e+09
+nessus_host_net_recv_bytes_total{interface="lo"} 9.48e+08
+
+# HELP nessus_info Nessus daemon version info.
+# TYPE nessus_info gauge
+nessus_info{build="20021",version="10.11.1"} 1
+
+# HELP nessus_process_state 1 if nessusd is running, 0 otherwise.
+# TYPE nessus_process_state gauge
+nessus_process_state 1
+
+# HELP nessus_messages_log_lines_total Total lines parsed from nessusd.messages.
+# TYPE nessus_messages_log_lines_total counter
+nessus_messages_log_lines_total 292
+```
+
 ## Nessus Configuration
 
 ### For Plugin Launch Metrics
