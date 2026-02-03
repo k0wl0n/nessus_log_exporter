@@ -1,0 +1,45 @@
+# Binaries
+nessus_log_exporter
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+TEMP
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs (sample files for testing)
+*.log
+*.messages
+*.dump
+
+# Docker volumes
+prometheus-data/
+grafana-data/
+
+# GoReleaser
+dist/
+*.tar.gz
+*.zip
+

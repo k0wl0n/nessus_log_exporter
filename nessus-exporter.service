@@ -1,0 +1,30 @@
+[Unit]
+Description=Nessus Log Exporter
+Documentation=https://github.com/k0wl0n/nessus_log_exporter
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/local/bin/nessus_log_exporter \
+    --nessus.messages-log=/opt/nessus/var/nessus/logs/nessusd.messages \
+    --nessus.backend-log=/opt/nessus/var/nessus/logs/backend.log \
+    --nessus.dump-log=/opt/nessus/var/nessus/logs/nessusd.dump \
+    --nessus.cli-log=/opt/nessus/var/nessus/logs/nessuscli.log \
+    --host.enable \
+    --web.listen-address=:19835 \
+    --web.telemetry-path=/metrics
+
+Restart=always
+RestartSec=10
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/opt/nessus/var/nessus/logs
+
+[Install]
+WantedBy=multi-user.target
