@@ -4,47 +4,120 @@ A production-ready Prometheus exporter that parses Nessus log files and exposes 
 
 ## Installation
 
-### Option 1: Download Pre-built Binary
+### Quick Install (Linux)
+
+Complete installation with systemd service:
+
+```bash
+# 1. Download and extract binary
+wget https://github.com/k0wl0n/nessus_log_exporter/releases/download/v1.0.0/nessus_log_exporter-1.0.0-linux-amd64.tar.gz
+tar xzf nessus_log_exporter-1.0.0-linux-amd64.tar.gz
+
+# 2. Install binary
+sudo mv nessus_log_exporter /usr/local/bin/
+sudo chmod +x /usr/local/bin/nessus_log_exporter
+
+# 3. Create systemd service
+sudo tee /etc/systemd/system/nessus-exporter.service > /dev/null <<'EOF'
+[Unit]
+Description=Nessus Log Exporter
+Documentation=https://github.com/k0wl0n/nessus_log_exporter
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/local/bin/nessus_log_exporter \
+    --nessus.messages-log=/opt/nessus/var/nessus/logs/nessusd.messages \
+    --nessus.backend-log=/opt/nessus/var/nessus/logs/backend.log \
+    --nessus.dump-log=/opt/nessus/var/nessus/logs/nessusd.dump \
+    --nessus.cli-log=/opt/nessus/var/nessus/logs/nessuscli.log \
+    --host.enable \
+    --web.listen-address=:19835 \
+    --web.telemetry-path=/metrics
+
+Restart=always
+RestartSec=10
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/opt/nessus/var/nessus/logs
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# 4. Enable and start service
+sudo systemctl daemon-reload
+sudo systemctl enable nessus-exporter
+sudo systemctl start nessus-exporter
+
+# 5. Check status
+sudo systemctl status nessus-exporter
+
+# 6. View metrics
+curl http://localhost:19835/metrics | grep nessus_
+```
+
+### Platform-Specific Downloads
 
 Download the latest release for your platform from the [releases page](https://github.com/k0wl0n/nessus_log_exporter/releases):
 
+**Linux AMD64**
 ```bash
-# Linux AMD64
-wget https://github.com/k0wl0n/nessus_log_exporter/releases/latest/download/nessus_log_exporter-linux-amd64.tar.gz
-tar xzf nessus_log_exporter-linux-amd64.tar.gz
+wget https://github.com/k0wl0n/nessus_log_exporter/releases/download/v1.0.0/nessus_log_exporter-1.0.0-linux-amd64.tar.gz
+tar xzf nessus_log_exporter-1.0.0-linux-amd64.tar.gz
 sudo mv nessus_log_exporter /usr/local/bin/
-
-# Linux ARM64
-wget https://github.com/k0wl0n/nessus_log_exporter/releases/latest/download/nessus_log_exporter-linux-arm64.tar.gz
-tar xzf nessus_log_exporter-linux-arm64.tar.gz
-sudo mv nessus_log_exporter /usr/local/bin/
-
-# macOS AMD64
-wget https://github.com/k0wl0n/nessus_log_exporter/releases/latest/download/nessus_log_exporter-darwin-amd64.tar.gz
-tar xzf nessus_log_exporter-darwin-amd64.tar.gz
-sudo mv nessus_log_exporter /usr/local/bin/
-
-# macOS ARM64 (Apple Silicon)
-wget https://github.com/k0wl0n/nessus_log_exporter/releases/latest/download/nessus_log_exporter-darwin-arm64.tar.gz
-tar xzf nessus_log_exporter-darwin-arm64.tar.gz
-sudo mv nessus_log_exporter /usr/local/bin/
-
-# Windows AMD64
-# Download nessus_log_exporter-windows-amd64.zip from releases page
+sudo chmod +x /usr/local/bin/nessus_log_exporter
 ```
 
-### Option 2: Install with Go
+**Linux ARM64**
+```bash
+wget https://github.com/k0wl0n/nessus_log_exporter/releases/download/v1.0.0/nessus_log_exporter-1.0.0-linux-arm64.tar.gz
+tar xzf nessus_log_exporter-1.0.0-linux-arm64.tar.gz
+sudo mv nessus_log_exporter /usr/local/bin/
+sudo chmod +x /usr/local/bin/nessus_log_exporter
+```
 
+**macOS AMD64 (Intel)**
+```bash
+wget https://github.com/k0wl0n/nessus_log_exporter/releases/download/v1.0.0/nessus_log_exporter-1.0.0-darwin-amd64.tar.gz
+tar xzf nessus_log_exporter-1.0.0-darwin-amd64.tar.gz
+sudo mv nessus_log_exporter /usr/local/bin/
+sudo chmod +x /usr/local/bin/nessus_log_exporter
+```
+
+**macOS ARM64 (Apple Silicon)**
+```bash
+wget https://github.com/k0wl0n/nessus_log_exporter/releases/download/v1.0.0/nessus_log_exporter-1.0.0-darwin-arm64.tar.gz
+tar xzf nessus_log_exporter-1.0.0-darwin-arm64.tar.gz
+sudo mv nessus_log_exporter /usr/local/bin/
+sudo chmod +x /usr/local/bin/nessus_log_exporter
+```
+
+**Windows AMD64**
+```powershell
+# Download from: https://github.com/k0wl0n/nessus_log_exporter/releases/download/v1.0.0/nessus_log_exporter-1.0.0-windows-amd64.zip
+# Extract and add to PATH
+```
+
+### Alternative Installation Methods
+
+**Install with Go**
 ```bash
 go install github.com/k0wl0n/nessus_log_exporter@latest
 ```
 
-### Option 3: Build from Source
-
+**Build from Source**
 ```bash
 git clone https://github.com/k0wl0n/nessus_log_exporter.git
 cd nessus_log_exporter
 go build -o nessus_log_exporter .
+sudo mv nessus_log_exporter /usr/local/bin/
 ```
 
 ## Features
@@ -58,38 +131,35 @@ go build -o nessus_log_exporter .
 
 ## Quick Start
 
-### Option 1: With Nessus Scanner in Docker (Recommended)
+After installation, the exporter will automatically start monitoring your Nessus logs:
 
 ```bash
-# 1. Start complete stack (Nessus + Exporter + Prometheus + Grafana)
-docker compose up -d
+# Check service status
+sudo systemctl status nessus-exporter
 
-# 2. Configure Nessus
-open https://localhost:8834  # Nessus Web UI (see NESSUS_SETUP.md)
+# View logs
+sudo journalctl -u nessus-exporter -f
 
-# 3. Access monitoring dashboards
-open http://localhost:3000  # Grafana (admin/admin)
-open http://localhost:9090  # Prometheus
-open http://localhost:19835/metrics  # Exporter metrics
+# Test metrics endpoint
+curl http://localhost:19835/metrics | grep nessus_
+
+# Manual run (for testing)
+nessus_log_exporter --help
 ```
 
-**📖 See [NESSUS_SETUP.md](NESSUS_SETUP.md) for detailed Nessus Docker configuration.**
+### Configuration
 
-### Option 2: With Existing Nessus Installation
+The exporter uses OS-aware defaults but can be customized:
 
 ```bash
-# 1. Clone and build
-cd nessus_exporter
-go mod tidy
-
-# 2. Edit docker-compose.yml to mount your existing Nessus logs
-# 3. Start the monitoring stack
-docker compose up -d --build
-
-# 4. Access dashboards
-open http://localhost:3000  # Grafana (admin/admin)
-open http://localhost:9090  # Prometheus
-open http://localhost:19835/metrics  # Exporter metrics
+# Run with custom log paths
+nessus_log_exporter \
+  --nessus.messages-log=/custom/path/nessusd.messages \
+  --nessus.backend-log=/custom/path/backend.log \
+  --nessus.dump-log=/custom/path/nessusd.dump \
+  --nessus.cli-log=/custom/path/nessuscli.log \
+  --host.enable \
+  --web.listen-address=:19835
 ```
 
 ## OS Detection
